@@ -1,0 +1,242 @@
+#include <iostream>
+#include <stack>
+using namespace std;
+
+class Node {
+public:
+    int data;
+    Node *left, *right;
+
+    Node(int val) {
+        data = val;
+        left = right = NULL;
+    }
+};
+
+class BST {
+    Node *root;
+
+public:
+    BST() {
+        root = NULL;
+    }
+
+    // INSERT (Iterative)
+    void insert(int val) {
+        Node *newNode = new Node(val);
+
+        if (root == NULL) {
+            root = newNode;
+            return;
+        }
+
+        Node *curr = root;
+        Node *parent = NULL;
+
+        while (curr != NULL) {
+            parent = curr;
+
+            if (val < curr->data)
+                curr = curr->left;
+            else if (val > curr->data)
+                curr = curr->right;
+            else {
+                cout << "Duplicate not allowed!\n";
+                return;
+            }
+        }
+
+        if (val < parent->data)
+            parent->left = newNode;
+        else
+            parent->right = newNode;
+    }
+
+    // SEARCH (Iterative)
+    void search(int key) {
+        Node *curr = root;
+
+        while (curr != NULL) {
+            if (curr->data == key) {
+                cout << "Element Found!\n";
+                return;
+            }
+            else if (key < curr->data)
+                curr = curr->left;
+            else
+                curr = curr->right;
+        }
+
+        cout << "Element Not Found!\n";
+    }
+
+    // DELETE (Iterative)
+    void deleteNode(int key) {
+        Node *curr = root;
+        Node *parent = NULL;
+
+        while (curr != NULL && curr->data != key) {
+            parent = curr;
+
+            if (key < curr->data)
+                curr = curr->left;
+            else
+                curr = curr->right;
+        }
+
+        if (curr == NULL) {
+            cout << "Element not found!\n";
+            return;
+        }
+
+        // Case 1 & 2 : 0 or 1 child
+        if (curr->left == NULL || curr->right == NULL) {
+            Node *child;
+
+            if (curr->left == NULL)
+                child = curr->right;
+            else
+                child = curr->left;
+
+            if (parent == NULL)
+                root = child;
+            else if (parent->left == curr)
+                parent->left = child;
+            else
+                parent->right = child;
+
+            delete curr;
+        }
+        else {
+            // Case 3 : 2 children
+            Node *succParent = curr;
+            Node *succ = curr->right;
+
+            while (succ->left != NULL) {
+                succParent = succ;
+                succ = succ->left;
+            }
+
+            curr->data = succ->data;
+
+            if (succParent->left == succ)
+                succParent->left = succ->right;
+            else
+                succParent->right = succ->right;
+
+            delete succ;
+        }
+
+        cout << "Element Deleted!\n";
+    }
+
+    // INORDER (Iterative)
+    void inorder() {
+        stack<Node*> st;
+        Node *curr = root;
+
+        while (curr != NULL || !st.empty()) {
+            while (curr != NULL) {
+                st.push(curr);
+                curr = curr->left;
+            }
+
+            curr = st.top();
+            st.pop();
+
+            cout << curr->data << " ";
+            curr = curr->right;
+        }
+        cout << endl;
+    }
+
+    // PREORDER (Iterative)
+    void preorder() {
+        if (root == NULL) return;
+
+        stack<Node*> st;
+        st.push(root);
+
+        while (!st.empty()) {
+            Node *curr = st.top();
+            st.pop();
+
+            cout << curr->data << " ";
+
+            if (curr->right) st.push(curr->right);
+            if (curr->left)  st.push(curr->left);
+        }
+        cout << endl;
+    }
+
+    // POSTORDER (Iterative using 2 stacks)
+    void postorder() {
+        if (root == NULL) return;
+
+        stack<Node*> s1, s2;
+        s1.push(root);
+
+        while (!s1.empty()) {
+            Node *curr = s1.top();
+            s1.pop();
+            s2.push(curr);
+
+            if (curr->left)  s1.push(curr->left);
+            if (curr->right) s1.push(curr->right);
+        }
+
+        while (!s2.empty()) {
+            cout << s2.top()->data << " ";
+            s2.pop();
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    BST tree;
+    int choice, val, sub;
+
+    do {
+        cout << "\n--- BST MENU ---\n";
+        cout << "1. Add Element\n";
+        cout << "2. Delete Element\n";
+        cout << "3. Display BST\n";
+        cout << "4. Search Element\n";
+        cout << "5. Exit\n";
+        cout << "Enter Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << "Enter value: ";
+            cin >> val;
+            tree.insert(val);
+            break;
+
+        case 2:
+            cout << "Enter value to delete: ";
+            cin >> val;
+            tree.deleteNode(val);
+            break;
+
+        case 3:
+            cout << "1. Inorder\n2. Preorder\n3. Postorder\n";
+            cin >> sub;
+
+            if (sub == 1) tree.inorder();
+            else if (sub == 2) tree.preorder();
+            else if (sub == 3) tree.postorder();
+            break;
+
+        case 4:
+            cout << "Enter value to search: ";
+            cin >> val;
+            tree.search(val);
+            break;
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
